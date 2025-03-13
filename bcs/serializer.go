@@ -303,6 +303,12 @@ func SerializeBytes(input []byte) ([]byte, error) {
 	})
 }
 
+func SerializeUleb128(input uint32) ([]byte, error) {
+	return SerializeSingle(func(ser *Serializer) {
+		ser.Uleb128(input)
+	})
+}
+
 // SerializeSingle is a convenience function, to not have to create a serializer to serialize one value
 //
 // Here's an example for handling a nested byte array
