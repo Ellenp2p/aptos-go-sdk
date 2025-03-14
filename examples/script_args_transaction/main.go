@@ -2,15 +2,42 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/aptos-labs/aptos-go-sdk"
 	"github.com/aptos-labs/aptos-go-sdk/bcs"
 	"github.com/aptos-labs/aptos-go-sdk/internal/util"
 )
 
-// const scriptBytes = "a11ceb0b0700000a0601000202020405062107271c0843401083011f0103000207001201020d0e03040f0508000a020a0d0a0e0a030a040a0f0a050a08000a0a080000083c53454c463e5f30046d61696e06537472696e6706737472696e67ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000114636f6d70696c6174696f6e5f6d65746164617461090003322e3003322e310000010102"
+/*
+script {
+    use std::string::String;
 
-const scriptBytes = "a11ceb0b0700000a0601000202020405061007161c08324010721f0103000207000b01020d0e03040f0508000a020a0d00083c53454c463e5f30046d61696e06537472696e6706737472696e67ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000114636f6d70696c6174696f6e5f6d65746164617461090003322e3003322e310000010102"
+    fun main(
+        bool: bool,
+        u8: u8,
+        u16: u16,
+        u32: u32,
+        u64: u64,
+        u128: u128,
+        u256: u256,
+        address: address,
+        string: String,
+        vec_u8: vector<u8>,
+        vec_u16: vector<u16>,
+        vec_u32: vector<u32>,
+        vec_u64: vector<u64>,
+        vec_u128: vector<u128>,
+        vec_u256: vector<u256>,
+        vec_address: vector<address>,
+        vec_string: vector<String>,
+    ){
+
+    }
+}
+*/
+
+const scriptBytes = "a11ceb0b0700000a0601000202020405061d07231c083f40107f1f0103000207001101020d0e03040f0508000a020a0d0a0e0a030a040a0f0a050a080000083c53454c463e5f30046d61696e06537472696e6706737472696e67ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000114636f6d70696c6174696f6e5f6d65746164617461090003322e3003322e310000010102"
 const FundAmount = uint64(100_000_000)
 
 func example(networkConfig aptos.NetworkConfig) {
@@ -76,6 +103,97 @@ func runScript(client *aptos.Client, alice *aptos.Account) {
 		vec_u16_arg = append(vec_u16_arg, bytes...)
 	}
 
+	vec_u32 := []uint32{1, 2, 3, 4, 5}
+	vec_u32_len, err := bcs.SerializeUleb128(uint32(len(vec_u32)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_u32_arg []byte
+	vec_u32_arg = append(vec_u32_arg, vec_u32_len...)
+	for _, v := range vec_u32 {
+		bytes, err := bcs.SerializeU32(v)
+		if err != nil {
+			panic("Failed to serialize u32:" + err.Error())
+		}
+		vec_u32_arg = append(vec_u32_arg, bytes...)
+	}
+
+	vec_u64 := []uint64{1, 2, 3, 4, 5}
+	vec_u64_len, err := bcs.SerializeUleb128(uint32(len(vec_u64)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_u64_arg []byte
+	vec_u64_arg = append(vec_u64_arg, vec_u64_len...)
+	for _, v := range vec_u64 {
+		bytes, err := bcs.SerializeU64(v)
+		if err != nil {
+			panic("Failed to serialize u64:" + err.Error())
+		}
+		vec_u64_arg = append(vec_u64_arg, bytes...)
+	}
+
+	vec_u128 := []big.Int{*big.NewInt(1), *big.NewInt(1),*big.NewInt(2), *big.NewInt(3), *big.NewInt(4)}
+	vec_u128_len, err := bcs.SerializeUleb128(uint32(len(vec_u128)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_u128_arg []byte
+	vec_u128_arg = append(vec_u128_arg, vec_u128_len...)
+	for _, v := range vec_u128 {
+		bytes, err := bcs.SerializeU128(v)
+		if err != nil {
+			panic("Failed to serialize u128:" + err.Error())
+		}
+		vec_u128_arg = append(vec_u128_arg, bytes...)
+	}
+
+	vec_u256 := []big.Int{*big.NewInt(1), *big.NewInt(1),*big.NewInt(2), *big.NewInt(3), *big.NewInt(4)}
+	vec_u256_len, err := bcs.SerializeUleb128(uint32(len(vec_u256)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_u256_arg []byte
+	vec_u256_arg = append(vec_u256_arg, vec_u256_len...)
+	for _, v := range vec_u256 {
+		bytes, err := bcs.SerializeU256(v)
+		if err != nil {
+			panic("Failed to serialize u256:" + err.Error())
+		}
+		vec_u256_arg = append(vec_u256_arg, bytes...)
+	}
+
+	vec_address := []aptos.AccountAddress{alice.AccountAddress(), alice.AccountAddress(), alice.AccountAddress(), alice.AccountAddress(), alice.AccountAddress()}
+	vec_address_len, err := bcs.SerializeUleb128(uint32(len(vec_address)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_address_arg []byte
+	vec_address_arg = append(vec_address_arg, vec_address_len...)
+	for _, v := range vec_address {
+		ser := bcs.Serializer{};
+		v.MarshalBCS(&ser)
+		bytes := ser.ToBytes()
+		vec_address_arg = append(vec_address_arg, bytes...)
+	}
+
+	vec_string := []string{"string", "string", "string", "string", "string"}
+	vec_string_len, err := bcs.SerializeUleb128(uint32(len(vec_string)));
+	if err != nil {
+		panic("Failed to serialize uleb128:" + err.Error())
+	}
+	var vec_string_arg []byte
+	vec_string_arg = append(vec_string_arg, vec_string_len...)
+	
+	for _, v := range vec_string {
+		string_len, err := bcs.SerializeUleb128(uint32(len([]byte(v))));
+		if err != nil {
+			panic("Failed to serialize uleb128:" + err.Error())
+		}
+		vec_string_arg = append(vec_string_arg, string_len...)
+		vec_string_arg = append(vec_string_arg, []byte(v)...)
+	}
+
 	// 1. Build transaction
 	rawTxn, err := client.BuildTransaction(alice.AccountAddress(), aptos.TransactionPayload{
 		Payload: &aptos.Script{
@@ -126,7 +244,30 @@ func runScript(client *aptos.Client, alice *aptos.Account) {
 					Variant: aptos.ScriptArgumentSerialized,
 					Value:  &bcs.Serialized{Value: vec_u16_arg},
 				},
- 
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_u32_arg},
+				},
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_u64_arg},
+				},
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_u128_arg},
+				},
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_u256_arg},
+				},
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_address_arg},
+				},
+				{
+					Variant: aptos.ScriptArgumentSerialized,
+					Value:  &bcs.Serialized{Value: vec_string_arg},
+				},
 			},
 		}})
 	if err != nil {
